@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Prazos — Escritório</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg: #e8f1fa;
+    --surface: #f5f9fd;
+    --card: #ffffff;
+    --border: #c5dbef;
+    --accent: #2563eb;
+    --accent2: #1d4ed8;
+    --text: #1a2942;
+    --muted: #64748b;
+    --red: #dc2626;
+    --green: #059669;
+    --blue: #2563eb;
+    --orange: #ea580c;
+    --purple: #7c3aed;
+  }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ════════════ LOGIN ════════════ */
+  .login-screen {
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+    background:linear-gradient(135deg, #d4e4f7 0%, #e8f1fa 100%);
+  }
+  .login-box {
+    background:var(--card); border-radius:16px; box-shadow:0 8px 30px rgba(26,41,66,0.15);
+    padding:40px; width:100%; max-width:420px;
+  }
+  .login-logo {
+    font-family:'Playfair Display',serif; font-size:28px; color:var(--accent); text-align:center; margin-bottom:8px;
+  }
+  .login-sub {
+    font-size:13px; color:var(--muted); text-align:center; margin-bottom:32px;
+  }
+  .login-form label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:500; }
+  .login-form input {
+    width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:8px;
+    background:var(--surface); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px;
+    margin-bottom:18px; outline:none;
+  }
+  .login-form input:focus { border-color:var(--accent); }
+  .login-btn {
+    width:100%; padding:13px; background:var(--accent); color:#fff; border:none; border-radius:8px;
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer;
+    transition:background 0.15s;
+  }
+  .login-btn:hover { background:var(--accent2); }
+  .login-btn:disabled { opacity:0.6; cursor:wait; }
+  .login-erro {
+    background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:var(--red);
+    padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none;
+  }
+  .login-loading {
+    text-align:center; padding:60px 20px; color:var(--muted);
+  }
+
+  /* ════════════ APP PRINCIPAL ════════════ */
+  .app { display:none; }
+  .app.show { display:block; }
+
+  header {
+    padding:16px 24px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    background:var(--surface); position:sticky; top:0; z-index:50;
+  }
+  .header-left { display:flex; align-items:center; gap:24px; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; color:var(--accent); }
+  .logo span { color:var(--muted); font-size:12px; font-family:'DM Sans',sans-serif; display:block; font-weight:300; }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .user-info {
+    font-size:12px; color:var(--muted); padding-right:10px; border-right:1px solid var(--border);
+  }
+  .user-info strong { color:var(--text); }
+  .search-box {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:7px 14px; color:var(--text); font-family:'DM Sans',sans-serif;
+    font-size:13px; width:200px; outline:none;
+  }
+  .search-box:focus { border-color:var(--accent); }
+  .btn { padding:7px 14px; border-radius:8px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.15s; }
+  .btn-primary { background:var(--accent); color:#ffffff; }
+  .btn-primary:hover { background:var(--accent2); }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-danger { background:transparent; color:var(--red); border:1px solid rgba(220,38,38,0.3); }
+  .btn-danger:hover { background:rgba(220,38,38,0.05); border-color:var(--red); }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+
+  .container { display:flex; min-height:calc(100vh - 65px); align-items:flex-start; }
+  aside {
+    width:240px; background:var(--surface); border-right:1px solid var(--border);
+    padding:18px 0; overflow-y:auto;
+    position:sticky; top:65px; height:calc(100vh - 65px); flex-shrink:0;
+  }
+  .sidebar-section { margin-bottom:20px; }
+  .sidebar-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); padding:0 16px 6px; }
+  .sidebar-item {
+    padding:9px 16px; cursor:pointer; font-size:13px; color:var(--text); display:flex; align-items:center; justify-content:space-between;
+  }
+  .sidebar-item:hover { background:rgba(37,99,235,0.06); }
+  .sidebar-item.active { background:rgba(37,99,235,0.12); color:var(--accent); border-left:3px solid var(--accent); padding-left:13px; }
+  .badge { background:var(--card); border:1px solid var(--border); padding:1px 7px; border-radius:10px; font-size:11px; color:var(--muted); }
+  .badge.red { background:rgba(220,38,38,0.12); border-color:rgba(220,38,38,0.3); color:var(--red); }
+
+  .modo-toggle {
+    display:flex; gap:4px; padding:8px 12px 14px; border-bottom:1px solid var(--border); margin-bottom:8px;
+  }
+  .modo-btn {
+    flex:1; background:transparent; border:1px solid var(--border); border-radius:8px;
+    padding:8px 6px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:11px;
+    font-weight:600; cursor:pointer; transition:all 0.2s; text-transform:uppercase; letter-spacing:0.5px;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .modo-btn:hover { color:var(--text); border-color:var(--accent); }
+  .modo-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .modo-btn.active.alerta { background:var(--orange); border-color:var(--orange); }
+  .modo-btn-num { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; }
+  .modo-btn-lbl { font-size:9px; }
+
+  main { flex:1; padding:24px; overflow:auto; }
+  .stats {
+    display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:22px;
+  }
+  .stat-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px;
+  }
+  .stat-num { font-family:'Playfair Display',serif; font-size:28px; color:var(--accent); }
+  .stat-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  /* CARDS CLICÁVEIS DE PRAZOS POR ADVOGADO */
+  .stats-prazos {
+    grid-template-columns:repeat(2,1fr); margin-bottom:22px;
+  }
+  .stat-clickable {
+    cursor:pointer; transition:all 0.2s; border-width:1px;
+  }
+  .stat-clickable:hover {
+    transform:translateY(-1px); box-shadow:0 4px 12px rgba(26,41,66,0.1);
+  }
+  .stat-jonathan { border-left:4px solid var(--accent); }
+  .stat-jonathan .stat-num { color:var(--accent); }
+  .stat-jonathan:hover { border-color:var(--accent); background:rgba(37,99,235,0.04); }
+  .stat-aldo { border-left:4px solid var(--purple); }
+  .stat-aldo .stat-num { color:var(--purple); }
+  .stat-aldo:hover { border-color:var(--purple); background:rgba(124,58,237,0.04); }
+
+  .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  .table-header h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--text); font-weight:400; }
+  .table-controls { display:flex; gap:8px; align-items:center; }
+  .form-input {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:7px 12px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none;
+  }
+  .form-input:focus { border-color:var(--accent); }
+
+  table { width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  thead { background:var(--surface); }
+  th { text-align:left; padding:12px 14px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); border-bottom:1px solid var(--border); }
+  td { padding:12px 14px; font-size:13px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:hover td { background:rgba(37,99,235,0.04); }
+  tr:last-child td { border-bottom:none; }
+  .cliente-name { font-weight:500; color:var(--text); }
+  .tel { font-size:11px; color:var(--muted); margin-top:2px; }
+  .cliente-obs { color:var(--text); font-size:13px; line-height:1.5; }
+  .cliente-obs.obs-secundaria { color:var(--muted); font-size:11px; }
+  td.col-doc { max-width:380px; min-width:260px; }
+  .tag { display:inline-block; font-size:11px; padding:2px 8px; border-radius:20px; background:var(--surface); color:var(--muted); }
+  .tag-compartilhado { background:rgba(124,58,237,0.12); color:var(--purple); margin-left:5px; }
+  .tag-aguardando { background:rgba(37,99,235,0.12); color:var(--blue); }
+  .tag-sem-contato { background:rgba(100,116,139,0.12); color:var(--muted); }
+  .tag-dilacao { background:rgba(234,88,12,0.12); color:var(--orange); }
+  .tag-urgente { background:rgba(220,38,38,0.15); color:var(--red); font-weight:500; }
+  .tag-concluido { background:rgba(5,150,105,0.12); color:var(--green); }
+
+  .tag-motivo {
+    display:inline-block; font-size:10px; padding:2px 8px; border-radius:20px;
+    background:rgba(124,58,237,0.12); color:var(--purple); margin-bottom:3px;
+  }
+  .tag-motivo.sem-doc { background:rgba(220,38,38,0.12); color:var(--red); }
+  .tag-motivo.sem-retorno { background:rgba(234,88,12,0.12); color:var(--orange); }
+  .tag-motivo.numero-incorreto { background:rgba(37,99,235,0.12); color:var(--blue); }
+  .tag-motivo.sem-vinculo { background:rgba(124,58,237,0.12); color:var(--purple); }
+  .tag-motivo.desistiu { background:rgba(100,116,139,0.12); color:var(--muted); }
+  .tag-motivo.outro-advogado { background:rgba(5,150,105,0.12); color:var(--green); }
+  .tag-motivo.ja-resolveu { background:rgba(5,150,105,0.12); color:var(--green); }
+  .tag-motivo.prescrito { background:rgba(100,116,139,0.12); color:var(--muted); }
+
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty-icon { font-size:48px; margin-bottom:12px; opacity:0.4; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--card); border-radius:14px; max-width:560px; width:100%; max-height:90vh; overflow-y:auto;
+    box-shadow:0 12px 40px rgba(26,41,66,0.2);
+  }
+  .modal-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .modal-header h3 { font-family:'Playfair Display',serif; font-weight:400; font-size:20px; }
+  .modal-body { padding:20px 24px; }
+  .modal-footer { padding:14px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+  .form-group { margin-bottom:14px; }
+  .form-label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:500; }
+  .form-input-full { width:100%; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* PAINEL DE DETALHES */
+  .detail-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:150; }
+  .detail-overlay.open { display:block; }
+  .detail-panel {
+    position:fixed; right:0; top:0; bottom:0; width:480px; max-width:100vw;
+    background:var(--card); border-left:1px solid var(--border); z-index:160;
+    transform:translateX(100%); transition:transform 0.25s; overflow-y:auto;
+    box-shadow:-4px 0 20px rgba(26,41,66,0.12);
+  }
+  .detail-panel.open { transform:translateX(0); }
+  .detail-header { padding:20px 24px; border-bottom:1px solid var(--border); }
+  .detail-close { float:right; background:transparent; border:none; font-size:22px; color:var(--muted); cursor:pointer; }
+  .detail-title { font-family:'Playfair Display',serif; font-size:22px; color:var(--text); margin-right:30px; }
+  .detail-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+  .detail-header-actions { margin-top:14px; display:flex; gap:6px; flex-wrap:wrap; }
+  .detail-body { padding:18px 24px; }
+  .detail-row { padding:10px 0; border-bottom:1px solid var(--border); }
+  .detail-key { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; font-weight:500; }
+  .detail-val { font-size:14px; color:var(--text); line-height:1.5; }
+  .detail-val a { color:var(--blue); text-decoration:none; }
+  .detail-val a:hover { text-decoration:underline; }
+
+  .editavel {
+    padding:6px 10px; margin:-6px -10px; border-radius:6px;
+    border:1px dashed transparent; transition:all 0.15s; position:relative;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .editavel:hover { border-color:var(--border); background:rgba(37,99,235,0.04); }
+  .editavel .edit-icon {
+    font-size:14px; color:var(--accent); opacity:0.5; transition:all 0.15s;
+    flex-shrink:0; cursor:pointer; padding:4px 8px; border-radius:4px;
+    background:rgba(37,99,235,0.1); user-select:none;
+  }
+  .editavel:hover .edit-icon { opacity:1; background:rgba(37,99,235,0.2); }
+  .editavel .edit-icon:hover { background:var(--accent); color:#fff !important; }
+  .editavel-ativo { background:var(--surface) !important; border-color:var(--accent) !important; border-style:solid !important; }
+  .edit-input, .edit-textarea, .edit-select {
+    width:100%; background:var(--surface); border:1px solid var(--accent); border-radius:6px;
+    padding:8px 10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px;
+    line-height:1.5; outline:none;
+  }
+  .edit-textarea { resize:vertical; min-height:65px; }
+  .edit-actions { display:flex; gap:6px; margin-top:8px; }
+  .edit-hint { font-size:10px; color:var(--muted); margin-top:5px; font-style:italic; }
+  .edit-wrapper { width:100%; }
+
+  .banner-pendente {
+    background:rgba(234,88,12,0.08); border:1px solid rgba(234,88,12,0.25);
+    border-radius:8px; padding:10px 12px; margin-bottom:14px;
+    font-size:12px; color:var(--orange);
+  }
+  .banner-pendente strong { color:var(--text); }
+
+  /* HISTÓRICO */
+  .historico-section { margin-top:18px; }
+  .historico-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:10px; }
+  .historico-empty { font-size:12px; color:var(--muted); font-style:italic; padding:14px; background:var(--surface); border-radius:8px; text-align:center; }
+  .historico-item { padding:10px 12px; background:var(--surface); border-radius:8px; margin-bottom:8px; border-left:3px solid var(--accent); }
+  .historico-meta { font-size:11px; color:var(--muted); margin-bottom:3px; }
+  .historico-texto { font-size:13px; color:var(--text); white-space:pre-wrap; line-height:1.5; }
+  .historico-add textarea {
+    width:100%; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; resize:vertical; min-height:65px; outline:none;
+  }
+  .historico-add textarea:focus { border-color:var(--accent); }
+  .historico-add-actions { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+
+  /* CONFIG MODAL */
+  .config-tabs {
+    display:flex; gap:2px; padding:0 12px; border-bottom:1px solid var(--border);
+    overflow-x:auto; flex-wrap:wrap;
+  }
+  .config-tab {
+    background:transparent; border:none; padding:11px 14px; font-size:12px;
+    font-family:'DM Sans',sans-serif; cursor:pointer; color:var(--muted);
+    border-bottom:2px solid transparent; white-space:nowrap; transition:all 0.15s;
+  }
+  .config-tab:hover { color:var(--text); }
+  .config-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  .cad-item {
+    display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
+    border-bottom:1px solid var(--border); gap:8px;
+  }
+  .cad-item:last-child { border-bottom:none; }
+  .cad-item:hover { background:var(--surface); }
+  .cad-item.inativo { opacity:0.5; }
+  .cad-info { flex:1; font-size:13px; }
+  .cad-info strong { color:var(--text); }
+  .cad-info small { font-size:11px; color:var(--muted); display:block; margin-top:2px; }
+  .cad-acoes { display:flex; gap:4px; }
+  .cad-empty { padding:30px 14px; text-align:center; color:var(--muted); font-style:italic; font-size:13px; }
+  .cad-form-row { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:10px; }
+  .cad-form-row.full { grid-template-columns:1fr; }
+  .cad-form-actions { display:flex; gap:6px; justify-content:flex-end; margin-top:10px; }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:30px; right:30px; background:var(--text); color:#fff;
+    padding:12px 18px; border-radius:8px; font-size:13px; z-index:300;
+    box-shadow:0 4px 20px rgba(0,0,0,0.2); transform:translateY(100px); opacity:0; transition:all 0.3s;
+  }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  /* SYNC INDICATOR */
+  .sync-indicator {
+    font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px;
+  }
+  .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .sync-indicator.offline .sync-dot { background:var(--red); animation:none; }
+
+  /* IMPORT BACKUP */
+  .import-banner {
+    background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.25);
+    padding:18px 22px; margin:0 24px 18px; border-radius:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .import-banner strong { color:var(--text); }
+
+  @media (max-width:768px) {
+    aside { display:none; }
+    .stats { grid-template-columns:repeat(2,1fr); }
+    .search-box { width:140px; }
+  }
+</style>
+
+<!-- Supabase JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- TELA DE LOGIN -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box" id="login-content">
+    <div class="login-logo">⚖ Controle de Prazos</div>
+    <div class="login-sub">Acesse com seu e-mail e senha</div>
+
+    <div class="login-erro" id="login-erro"></div>
+
+    <form class="login-form" id="login-form" onsubmit="event.preventDefault(); fazerLogin();">
+      <label>E-mail</label>
+      <input type="email" id="login-email" required autocomplete="email" placeholder="seu@email.com">
+      <label>Senha</label>
+      <input type="password" id="login-senha" required autocomplete="current-password" placeholder="••••••••">
+      <button type="submit" class="login-btn" id="login-btn">Entrar</button>
+    </form>
+  </div>
+  <div class="login-loading" id="login-loading" style="display:none">
+    <div style="font-size:32px; margin-bottom:14px">⚙️</div>
+    <div>Conectando ao sistema...</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- APP PRINCIPAL -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="app" id="app">
+  <header>
+    <div class="header-left">
+      <div class="logo">⚖ Controle de Prazos<span>TRF1 — Salário-Maternidade Rural</span></div>
+    </div>
+    <div class="header-right">
+      <input type="text" class="search-box" id="search-input" placeholder="🔍 Buscar..." oninput="renderTable()">
+      <select class="form-input" id="sort-sel" onchange="renderTable()">
+        <option value="prazo">Por prazo</option>
+        <option value="atualizada">Mais atualizadas</option>
+        <option value="nome">Por nome</option>
+        <option value="cidade">Por seção</option>
+      </select>
+      <button class="btn btn-primary" onclick="openModal()">+ Nova Cliente</button>
+      <button class="btn btn-ghost" onclick="exportarBackup()" title="Baixar backup">⬇</button>
+      <button class="btn btn-ghost" id="btn-config" onclick="abrirConfiguracoes()" title="Configurações" style="display:none">⚙️</button>
+      <div class="sync-indicator" id="sync-indicator" title="Conectado e sincronizando"><span class="sync-dot"></span> ao vivo</div>
+      <span class="user-info">olá, <strong id="user-nome"></strong></span>
+      <button class="btn btn-ghost btn-sm" onclick="fazerLogout()">Sair</button>
+    </div>
+  </header>
+
+  <!-- Banner de importação (aparece se banco estiver vazio) -->
+  <div class="import-banner" id="import-banner" style="display:none">
+    <div>
+      <strong>📥 Banco de dados vazio</strong><br>
+      <span style="font-size:13px;color:var(--muted)">Importe seu backup JSON do sistema antigo para migrar suas clientes.</span>
+    </div>
+    <div style="display:flex; gap:8px">
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importarBackup(event)">
+      <button class="btn btn-primary" onclick="document.getElementById('import-file').click()">Selecionar arquivo JSON</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <aside>
+      <div class="modo-toggle">
+        <button class="modo-btn active" id="modo-ativas-btn" onclick="setModo('ativas')">
+          <span class="modo-btn-num" id="qtd-ativas">0</span>
+          <span class="modo-btn-lbl">📋 Ativas</span>
+        </button>
+        <button class="modo-btn alerta" id="modo-pendentes-btn" onclick="setModo('pendentes')">
+          <span class="modo-btn-num" id="qtd-pendentes">0</span>
+          <span class="modo-btn-lbl">⏸ Pendências</span>
+        </button>
+      </div>
+
+      <div id="filtros-pendentes" style="display:none">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Motivo da Pendência</div>
+          <div class="sidebar-item active" onclick="setFilter('motivoPendencia','todos',this)">📂 Todos <span class="badge" id="b-pend-todos"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','sem-retorno',this)">📵 Sem retorno <span class="badge" id="b-pend-sem-retorno"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','sem-documentos',this)">❌ Sem documentação <span class="badge" id="b-pend-sem-documentos"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','numero-incorreto',this)">☎ Número incorreto <span class="badge" id="b-pend-numero-incorreto"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','sem-vinculo',this)">🚫 Sem vínculo <span class="badge" id="b-pend-sem-vinculo"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','aguardando-captador',this)">🔍 Aguard. captador <span class="badge" id="b-pend-aguardando-captador"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','desistiu',this)">🛑 Desistiu <span class="badge" id="b-pend-desistiu"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','outro-advogado',this)">⚖ Outro advogado <span class="badge" id="b-pend-outro-advogado"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','ja-resolveu',this)">✅ Já resolveu <span class="badge" id="b-pend-ja-resolveu"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','prescrito',this)">⏰ Prescrito <span class="badge" id="b-pend-prescrito"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','litispendencia',this)">⚖ Litispendência <span class="badge" id="b-pend-litispendencia"></span></div>
+          <div class="sidebar-item" onclick="setFilter('motivoPendencia','prazo-perdido',this)">⚠ Prazo perdido <span class="badge" id="b-pend-prazo-perdido"></span></div>
+        </div>
+      </div>
+
+      <div id="filtros-ativas">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Advogado</div>
+          <div class="sidebar-item active" onclick="setFilter('advogado','todos',this)">👥 Todos <span class="badge" id="b-todos"></span></div>
+          <div class="sidebar-item" onclick="setFilter('advogado','Jonathan',this)">⚖ Jonathan <span class="badge" id="b-jonathan"></span></div>
+          <div class="sidebar-item" onclick="setFilter('advogado','Aldo',this)">⚖ Aldo <span class="badge" id="b-aldo"></span></div>
+          <div class="sidebar-item" onclick="setFilter('advogado','Jonathan+Aldo',this)">⚖ Jonathan + Aldo <span class="badge" id="b-ambos"></span></div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-label">Status</div>
+          <div class="sidebar-item" onclick="setFilter('status','urgente',this)">🔴 Urgente <span class="badge red" id="b-urgente"></span></div>
+          <div class="sidebar-item" onclick="setFilter('status','dilacao',this)">⏳ Dilação</div>
+          <div class="sidebar-item" onclick="setFilter('status','sem-contato',this)">📵 Sem contato</div>
+          <div class="sidebar-item" onclick="setFilter('status','aguardando',this)">🔄 Aguardando</div>
+          <div class="sidebar-item" onclick="setFilter('status','concluido',this)">✅ Concluído</div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO JUDICIÁRIA — visível em ambos os modos -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">Seção Judiciária</div>
+        <div id="lista-secoes-sidebar"></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="stats">
+        <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Total Ativas</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-prazo">0</div><div class="stat-lbl">Com Prazo Definido</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-dilacao">0</div><div class="stat-lbl">Dilação Pedida</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-semcontato">0</div><div class="stat-lbl">Sem Contato</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-comp">0</div><div class="stat-lbl">Compartilhadas</div></div>
+      </div>
+
+      <!-- CARDS DE PRAZOS POR ADVOGADO -->
+      <div class="stats stats-prazos">
+        <div class="stat-card stat-clickable stat-jonathan" onclick="filtrarPrazosAdvogado('Jonathan')">
+          <div class="stat-num" id="s-prazos-jonathan">0</div>
+          <div class="stat-lbl">⚖ Prazos do Jonathan</div>
+        </div>
+        <div class="stat-card stat-clickable stat-aldo" onclick="filtrarPrazosAdvogado('Aldo')">
+          <div class="stat-num" id="s-prazos-aldo">0</div>
+          <div class="stat-lbl">⚖ Prazos do Aldo</div>
+        </div>
+      </div>
+
+      <div class="table-header">
+        <h2 id="section-title">Todas as Clientes</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Advogado</th>
+            <th>Seção</th>
+            <th>Prazo</th>
+            <th>O que precisa</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none"><div class="empty-icon">📋</div>Nenhuma cliente encontrada</div>
+    </main>
+  </div>
+</div>
+
+<!-- MODAL DE NOVA/EDIÇÃO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-titulo">➕ Nova Cliente</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+      <div class="form-group"><label class="form-label">Nome *</label>
+        <input type="text" class="form-input form-input-full" id="f-nome">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Advogado</label>
+          <select class="form-input form-input-full" id="f-adv">
+            <option>Jonathan</option><option>Aldo</option><option>Jonathan/Aldo</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Seção Judiciária</label>
+          <input type="text" class="form-input form-input-full" id="f-cidade" list="dl-secoes">
+          <datalist id="dl-secoes"></datalist>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prazo</label>
+          <input type="date" class="form-input form-input-full" id="f-data">
+        </div>
+        <div class="form-group"><label class="form-label">Telefone</label>
+          <input type="tel" class="form-input form-input-full" id="f-tel" placeholder="(xx) xxxxx-xxxx">
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">O que precisa</label>
+        <textarea class="form-input form-input-full" id="f-doc" rows="3"></textarea>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label>
+        <textarea class="form-input form-input-full" id="f-obs" rows="3"></textarea>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-input form-input-full" id="f-status">
+          <option value="aguardando">🔄 Aguardando retorno</option>
+          <option value="sem-contato">📵 Sem contato</option>
+          <option value="dilacao">⏳ Dilação pedida</option>
+          <option value="urgente">🔴 Urgente</option>
+          <option value="concluido">✅ Concluído</option>
+        </select>
+      </div>
+      <div class="form-group" style="background:rgba(234,88,12,0.06);border:1px solid rgba(234,88,12,0.2);border-radius:8px;padding:12px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="f-pendente" onchange="document.getElementById('f-motivo-wrap').style.display=this.checked?'block':'none'">
+          <span>⏸ Marcar como <strong>pendente</strong></span>
+        </label>
+        <div id="f-motivo-wrap" style="display:none;margin-top:10px">
+          <label class="form-label">Motivo</label>
+          <select class="form-input form-input-full" id="f-motivo">
+            <option value="sem-retorno">📵 Sem retorno</option>
+            <option value="sem-documentos">❌ Sem documentação</option>
+            <option value="numero-incorreto">☎ Número incorreto</option>
+            <option value="sem-vinculo">🚫 Sem vínculo rural/pesca</option>
+            <option value="aguardando-captador">🔍 Aguardando captador</option>
+            <option value="desistiu">🛑 Desistiu/Cancelou</option>
+            <option value="outro-advogado">⚖ Com outro advogado</option>
+            <option value="ja-resolveu">✅ Já recebeu/resolveu</option>
+            <option value="prescrito">⏰ Prescrito</option>
+            <option value="litispendencia">⚖ Litispendência</option>
+            <option value="prazo-perdido">⚠ Prazo perdido</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar" onclick="salvarCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAINEL DE DETALHES -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<aside class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div class="detail-title" id="dp-nome"></div>
+    <div class="detail-sub" id="dp-sub"></div>
+    <div id="dp-banner-pendente" class="banner-pendente" style="display:none">
+      <strong>⏸ Cliente pendente:</strong> <span id="dp-motivo-pendente"></span>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="alterarMotivoPendencia()">Alterar motivo</button>
+        <button class="btn btn-primary btn-sm" onclick="moverParaAtivas()">↩ Mover para Ativas</button>
+      </div>
+    </div>
+    <div id="dp-banner-ativa" style="display:none;margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="moverParaPendentes()">⏸ Marcar como pendente</button>
+    </div>
+    <div class="detail-header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="abrirWhatsapp()" id="btn-wpp">💬 WhatsApp</button>
+      <button class="btn btn-danger btn-sm" onclick="excluirCliente()">🗑 Excluir</button>
+    </div>
+  </div>
+
+  <div class="detail-body">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px;font-style:italic">💡 Clique em qualquer campo para editar</div>
+
+    <div class="detail-row"><div class="detail-key">Advogado</div>
+      <div class="detail-val editavel" data-campo="advogado">
+        <span class="campo-valor" id="dp-adv"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'advogado')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Seção Judiciária</div>
+      <div class="detail-val editavel" data-campo="secao_judiciaria">
+        <span class="campo-valor" id="dp-cidade"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'secao_judiciaria')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Prazo</div>
+      <div class="detail-val editavel" data-campo="data_prazo">
+        <span class="campo-valor" id="dp-data"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'data_prazo')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Telefone</div>
+      <div class="detail-val editavel" data-campo="telefone">
+        <span class="campo-valor" id="dp-tel"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'telefone')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">O que precisa</div>
+      <div class="detail-val editavel" data-campo="o_que_precisa">
+        <span class="campo-valor" id="dp-doc"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'o_que_precisa')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Observações</div>
+      <div class="detail-val editavel" data-campo="observacoes">
+        <span class="campo-valor" id="dp-obs"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'observacoes')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Status</div>
+      <div class="detail-val editavel" data-campo="status">
+        <span class="campo-valor" id="dp-status"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'status')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Nome</div>
+      <div class="detail-val editavel" data-campo="nome">
+        <span class="campo-valor" id="dp-nome-val"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'nome')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+
+    <div class="historico-section">
+      <div class="historico-title">📋 Histórico & Anotações</div>
+      <div id="historico-list"></div>
+      <div class="historico-add">
+        <textarea id="hist-texto" placeholder="Adicionar anotação..."></textarea>
+        <div class="historico-add-actions">
+          <button class="btn btn-primary btn-sm" onclick="adicionarHistorico('nota')">📝 Nota</button>
+          <button class="btn btn-ghost btn-sm" onclick="adicionarHistorico('resposta')">💬 Resposta</button>
+          <button class="btn btn-ghost btn-sm" onclick="adicionarHistorico('andamento')">⚖ Andamento</button>
+          <button class="btn btn-ghost btn-sm" onclick="adicionarHistorico('contato')">📞 Contato</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- MODAL DE CONFIGURAÇÕES (admin only) -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-config">
+  <div class="modal" style="max-width:780px; max-height:92vh">
+    <div class="modal-header">
+      <h3>⚙️ Configurações do Sistema</h3>
+      <button class="btn btn-ghost btn-sm" onclick="fecharConfiguracoes()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <!-- abas -->
+      <div class="config-tabs" id="config-tabs">
+        <button class="config-tab active" onclick="mudarAbaConfig('secoes_judiciarias',this)">📍 Seções</button>
+        <button class="config-tab" onclick="mudarAbaConfig('advogados',this)">⚖ Advogados</button>
+        <button class="config-tab" onclick="mudarAbaConfig('captadores',this)">🔍 Captadores</button>
+        <button class="config-tab" onclick="mudarAbaConfig('tribunais',this)">🏛 Tribunais</button>
+        <button class="config-tab" onclick="mudarAbaConfig('tipos_segurado',this)">👤 Tipo Segurado</button>
+        <button class="config-tab" onclick="mudarAbaConfig('tipos_beneficio',this)">💼 Benefícios</button>
+        <button class="config-tab" onclick="mudarAbaConfig('motivos_pendencia',this)">⏸ Motivos</button>
+        <button class="config-tab" onclick="mudarAbaConfig('status_processo',this)">🚦 Status</button>
+      </div>
+
+      <div style="padding:18px 24px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px">
+          <div>
+            <div id="config-titulo" style="font-family:'Playfair Display',serif; font-size:18px"></div>
+            <div id="config-sub" style="font-size:11px; color:var(--muted)"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-novo-cad" onclick="novoCadastro()">+ Adicionar</button>
+        </div>
+
+        <div id="config-form-novo" style="display:none; padding:14px; background:var(--surface); border-radius:8px; margin-bottom:14px"></div>
+
+        <div id="config-lista" style="max-height:50vh; overflow-y:auto; border:1px solid var(--border); border-radius:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharConfiguracoes()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONFIGURAÇÃO SUPABASE
+// ════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://xavnhikgarjvoingbgvz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhhdm5oaWtnYXJqdm9pbmdiZ3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2OTEyMzIsImV4cCI6MjA5MzI2NzIzMn0.rbBvb-CuvHyl65rz64Bvnf11UbOp5sim1OsiR_1GiHI';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Estado global
+let clientes = [];
+let perfilAtual = null;
+let secoesDisponiveis = [];
+let advogadosDisponiveis = ['Jonathan','Aldo','Jonathan/Aldo'];
+let currentFilter = {type:'advogado', value:'todos'};
+let currentDetailId = null;
+let editandoId = null;
+let modoAtual = 'ativas';
+let editandoCampo = null;
+
+const motivoLabel = {
+  'sem-retorno':'📵 Sem retorno','sem-documentos':'❌ Sem documentação',
+  'numero-incorreto':'☎ Número incorreto','sem-vinculo':'🚫 Sem vínculo rural/pesca',
+  'aguardando-captador':'🔍 Aguardando captador','desistiu':'🛑 Desistiu/Cancelou',
+  'outro-advogado':'⚖ Com outro advogado','ja-resolveu':'✅ Já recebeu/resolveu',
+  'prescrito':'⏰ Prescrito','litispendencia':'⚖ Litispendência','prazo-perdido':'⚠ Prazo perdido'
+};
+const motivoCls = {
+  'sem-retorno':'sem-retorno','sem-documentos':'sem-doc',
+  'numero-incorreto':'numero-incorreto','sem-vinculo':'sem-vinculo',
+  'aguardando-captador':'sem-retorno','desistiu':'desistiu',
+  'outro-advogado':'outro-advogado','ja-resolveu':'ja-resolveu',
+  'prescrito':'prescrito','litispendencia':'prescrito','prazo-perdido':'sem-retorno'
+};
+const statusLabel = {
+  aguardando:'🔄 Aguardando',sem_contato:'📵 Sem contato','sem-contato':'📵 Sem contato',
+  dilacao:'⏳ Dilação',urgente:'🔴 Urgente',concluido:'✅ Concluído'
+};
+const statusCls = {
+  aguardando:'tag-aguardando','sem-contato':'tag-sem-contato',
+  dilacao:'tag-dilacao',urgente:'tag-urgente',concluido:'tag-concluido'
+};
+
+// ════════════════════════════════════════════════════════════════
+// LOGIN / LOGOUT
+// ════════════════════════════════════════════════════════════════
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const erroEl = document.getElementById('login-erro');
+  const btnEl = document.getElementById('login-btn');
+  erroEl.style.display = 'none';
+  btnEl.disabled = true;
+  btnEl.textContent = 'Entrando...';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if (error) throw error;
+    await iniciarApp();
+  } catch (e) {
+    erroEl.textContent = '❌ ' + (e.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos' : e.message);
+    erroEl.style.display = 'block';
+    btnEl.disabled = false;
+    btnEl.textContent = 'Entrar';
+  }
+}
+
+async function fazerLogout() {
+  if (!confirm('Deseja sair do sistema?')) return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function verificarSessao() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    await iniciarApp();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+}
+
+async function iniciarApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  await carregarPerfil();
+  // mostra botão de configurações se for admin
+  if (perfilAtual && perfilAtual.papel === 'admin') {
+    document.getElementById('btn-config').style.display = '';
+  }
+  await carregarSecoes();
+  await carregarAdvogados();
+  await carregarClientes();
+  setupRealtime();
+}
+
+async function carregarPerfil() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data, error } = await sb.from('perfis').select('*').eq('id', user.id).single();
+  if (data) {
+    perfilAtual = data;
+    document.getElementById('user-nome').textContent = data.nome || data.email;
+  }
+}
+
+async function carregarSecoes() {
+  const { data } = await sb.from('secoes_judiciarias').select('nome,ordem').eq('ativo', true).order('ordem', { ascending: true }).order('nome');
+  if (data) {
+    secoesDisponiveis = data.map(s => s.nome);
+    const dl = document.getElementById('dl-secoes');
+    dl.innerHTML = secoesDisponiveis.map(s => `<option value="${escapeHtml(s)}">`).join('');
+    // popula sidebar lateral também
+    const cores = ['#2563eb','#5cc98a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];
+    const sb_lista = document.getElementById('lista-secoes-sidebar');
+    if (sb_lista) {
+      sb_lista.innerHTML = secoesDisponiveis.map((s, i) =>
+        `<div class="sidebar-item" onclick="setFilter('cidade','${escapeHtml(s).replace(/'/g,'\\\'')}',this)"><span class="dot" style="background:${cores[i % cores.length]};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px"></span>${escapeHtml(s)}</div>`
+      ).join('');
+    }
+  }
+}
+
+async function carregarAdvogados() {
+  const { data } = await sb.from('advogados').select('nome').eq('ativo', true).order('nome');
+  if (data) {
+    advogadosDisponiveis = data.map(a => a.nome);
+    // se houver mais de um advogado, criar combinações compartilhadas
+    if (advogadosDisponiveis.length >= 2) {
+      const combos = [];
+      for (let i = 0; i < advogadosDisponiveis.length; i++) {
+        for (let j = i+1; j < advogadosDisponiveis.length; j++) {
+          combos.push(advogadosDisponiveis[i] + '/' + advogadosDisponiveis[j]);
+        }
+      }
+      advogadosDisponiveis = [...advogadosDisponiveis, ...combos];
+    }
+    // atualiza select do modal
+    const sel = document.getElementById('f-adv');
+    if (sel) sel.innerHTML = advogadosDisponiveis.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CARREGAR CLIENTES DO BANCO
+// ════════════════════════════════════════════════════════════════
+async function carregarClientes() {
+  try {
+    const { data, error } = await sb.from('clientes').select('*').order('id');
+    if (error) throw error;
+    clientes = data || [];
+
+    // carrega histórico de cada cliente
+    const { data: hist } = await sb.from('historico_clientes').select('*').order('quando', { ascending: true });
+    const histPorCliente = {};
+    (hist || []).forEach(h => {
+      if (!histPorCliente[h.cliente_id]) histPorCliente[h.cliente_id] = [];
+      histPorCliente[h.cliente_id].push(h);
+    });
+    clientes.forEach(c => { c.historico = histPorCliente[c.id] || []; });
+
+    // mostrar banner de importação se vazio
+    const banner = document.getElementById('import-banner');
+    if (clientes.length === 0) {
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    renderTable();
+  } catch (e) {
+    console.error('Erro ao carregar:', e);
+    showToast('⚠ Erro ao carregar clientes: ' + e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// REALTIME — escuta alterações de outros usuários
+// ════════════════════════════════════════════════════════════════
+function setupRealtime() {
+  sb.channel('clientes-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' },
+      payload => {
+        // recarrega ao detectar qualquer mudança
+        carregarClientes();
+      })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'historico_clientes' },
+      payload => { carregarClientes(); })
+    .subscribe();
+}
+
+// ════════════════════════════════════════════════════════════════
+// IMPORTAR BACKUP DO SISTEMA ANTIGO
+// ════════════════════════════════════════════════════════════════
+async function importarBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!confirm(`Importar "${file.name}"?\n\nIsso vai inserir todas as clientes do backup no banco. Pode demorar alguns minutos.`)) {
+    event.target.value = '';
+    return;
+  }
+
+  try {
+    const texto = await file.text();
+    const dados = JSON.parse(texto);
+    if (!Array.isArray(dados)) throw new Error('Arquivo inválido — esperado um array de clientes');
+
+    showToast(`📥 Importando ${dados.length} clientes... aguarde`);
+
+    // Mapeia campos do sistema antigo para o novo
+    const lote = dados.map(c => ({
+      nome: c.nome || '(sem nome)',
+      telefone: c.tel || null,
+      data_prazo: c.data || null,
+      advogado: c.adv || null,
+      secao_judiciaria: c.cidade || null,
+      status: c.status || 'aguardando',
+      o_que_precisa: c.doc || null,
+      observacoes: c.obs || null,
+      pendente: !!c.pendente,
+      motivo_pendencia: c.motivoPendencia || null
+    }));
+
+    // Insere em lotes de 100 pra não estourar limite
+    let inseridos = 0;
+    for (let i = 0; i < lote.length; i += 100) {
+      const chunk = lote.slice(i, i + 100);
+      const { data: novos, error } = await sb.from('clientes').insert(chunk).select('id');
+      if (error) throw error;
+      inseridos += novos.length;
+
+      // importa histórico de cada cliente do chunk
+      const histInserir = [];
+      for (let j = 0; j < chunk.length; j++) {
+        const original = dados[i + j];
+        const novoId = novos[j].id;
+        if (original.historico && Array.isArray(original.historico)) {
+          original.historico.forEach(h => {
+            histInserir.push({
+              cliente_id: novoId,
+              tipo: h.tipo || 'nota',
+              texto: h.texto || '',
+              quando: h.quando || new Date().toISOString(),
+              usuario_nome: 'Importado'
+            });
+          });
+        }
+      }
+      if (histInserir.length) {
+        await sb.from('historico_clientes').insert(histInserir);
+      }
+    }
+
+    showToast(`✅ ${inseridos} clientes importadas com sucesso!`);
+    document.getElementById('import-banner').style.display = 'none';
+    await carregarClientes();
+  } catch (e) {
+    console.error('Erro na importação:', e);
+    showToast('❌ Erro: ' + e.message);
+  }
+  event.target.value = '';
+}
+
+// ════════════════════════════════════════════════════════════════
+// FUNÇÕES DE EXIBIÇÃO (filtragem, render, stats)
+// ════════════════════════════════════════════════════════════════
+function getFiltered() {
+  let list = [...clientes];
+  if (modoAtual === 'pendentes') {
+    list = list.filter(c => c.pendente === true);
+  } else {
+    list = list.filter(c => !c.pendente);
+  }
+  const search = document.getElementById('search-input').value.toLowerCase();
+  if (search) list = list.filter(c =>
+    (c.nome||'').toLowerCase().includes(search) ||
+    (c.secao_judiciaria||'').toLowerCase().includes(search) ||
+    (c.o_que_precisa||'').toLowerCase().includes(search) ||
+    (c.telefone||'').toLowerCase().includes(search) ||
+    (c.observacoes||'').toLowerCase().includes(search)
+  );
+  if (currentFilter.type === 'advogado') {
+    // Sempre exclui clientes parqueadas em "Sem Retorno/Red"
+    list = list.filter(c => (c.secao_judiciaria||'') !== 'Sem Retorno/Red');
+    if (currentFilter.value === 'Jonathan+Aldo') {
+      list = list.filter(c => {
+        const adv = c.advogado || '';
+        return adv.includes('Jonathan') || adv.includes('Aldo');
+      });
+    } else if (currentFilter.value !== 'todos') {
+      list = list.filter(c => (c.advogado||'').includes(currentFilter.value));
+    }
+  } else if (currentFilter.type === 'status') {
+    list = list.filter(c => c.status === currentFilter.value);
+  } else if (currentFilter.type === 'cidade') {
+    list = list.filter(c => c.secao_judiciaria === currentFilter.value);
+  } else if (currentFilter.type === 'motivoPendencia' && currentFilter.value !== 'todos') {
+    list = list.filter(c => c.motivo_pendencia === currentFilter.value);
+  } else if (currentFilter.type === 'prazoAdvogado') {
+    list = list.filter(c => c.data_prazo && (c.advogado||'').includes(currentFilter.value));
+  }
+  const sort = document.getElementById('sort-sel').value;
+  if (sort === 'nome') list.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+  else if (sort === 'cidade') list.sort((a,b) => (a.secao_judiciaria||'').localeCompare(b.secao_judiciaria||''));
+  else if (sort === 'atualizada') list.sort((a,b) => (b.atualizado_em||'').localeCompare(a.atualizado_em||''));
+  else list.sort((a,b) => {
+    if (!a.data_prazo && !b.data_prazo) return 0;
+    if (!a.data_prazo) return 1; if (!b.data_prazo) return -1;
+    return a.data_prazo.localeCompare(b.data_prazo);
+  });
+  return list;
+}
+
+function setModo(modo) {
+  modoAtual = modo;
+  document.getElementById('modo-ativas-btn').classList.toggle('active', modo==='ativas');
+  document.getElementById('modo-pendentes-btn').classList.toggle('active', modo==='pendentes');
+  document.getElementById('filtros-ativas').style.display = modo==='ativas' ? '' : 'none';
+  document.getElementById('filtros-pendentes').style.display = modo==='pendentes' ? '' : 'none';
+  if (modo === 'ativas') {
+    currentFilter = {type:'advogado', value:'todos'};
+    document.querySelectorAll('#filtros-ativas .sidebar-item').forEach(i=>i.classList.remove('active'));
+    document.querySelector('#filtros-ativas .sidebar-item').classList.add('active');
+    document.getElementById('section-title').textContent = 'Todas as Clientes';
+  } else {
+    currentFilter = {type:'motivoPendencia', value:'todos'};
+    document.querySelectorAll('#filtros-pendentes .sidebar-item').forEach(i=>i.classList.remove('active'));
+    document.querySelector('#filtros-pendentes .sidebar-item').classList.add('active');
+    document.getElementById('section-title').textContent = '⏸ Pendências — Todas';
+  }
+  renderTable();
+}
+
+function renderTable() {
+  const list = getFiltered();
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty');
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display='block'; }
+  else { empty.style.display='none'; }
+  tbody.innerHTML = list.map(c => {
+    const adv = c.advogado || '';
+    const comp = adv.includes('/') ? '<span class="tag tag-compartilhado">compartilhada</span>' : '';
+    const obs = c.observacoes || '';
+    const tagMotivo = c.pendente && c.motivo_pendencia
+      ? `<span class="tag-motivo ${motivoCls[c.motivo_pendencia]||''}">${motivoLabel[c.motivo_pendencia]||c.motivo_pendencia}</span><br>`
+      : '';
+    return `<tr onclick="openDetail(${c.id})" style="cursor:pointer">
+      <td><div class="cliente-name">${escapeHtml(c.nome||'(sem nome)')}</div>${c.telefone ? `<div class="tel">📞 ${escapeHtml(c.telefone)}</div>` : ''}</td>
+      <td><span style="font-size:13px">${escapeHtml(adv)}</span>${comp}</td>
+      <td><span style="font-size:12px;color:var(--muted)">${escapeHtml(c.secao_judiciaria||'')}</span></td>
+      <td>${formatData(c.data_prazo)}</td>
+      <td class="col-doc">${tagMotivo}<div class="cliente-obs">${escapeHtml(c.o_que_precisa||'')}</div>${obs ? `<div class="cliente-obs obs-secundaria" style="font-style:italic;margin-top:4px">${escapeHtml(obs)}</div>` : ''}</td>
+      <td><span class="tag ${statusCls[c.status]||'tag-aguardando'}">${statusLabel[c.status]||c.status||''}</span></td>
+    </tr>`;
+  }).join('');
+  updateStats();
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function formatData(d) {
+  if (!d) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  return d.split('-').reverse().join('/');
+}
+
+function updateStats() {
+  const ativas = clientes.filter(c => !c.pendente);
+  const pendentes = clientes.filter(c => c.pendente === true);
+  document.getElementById('s-total').textContent = ativas.length;
+  document.getElementById('s-prazo').textContent = ativas.filter(c=>c.data_prazo).length;
+  document.getElementById('s-dilacao').textContent = ativas.filter(c=>c.status==='dilacao').length;
+  document.getElementById('s-semcontato').textContent = ativas.filter(c=>c.status==='sem-contato').length;
+  document.getElementById('s-comp').textContent = ativas.filter(c=>(c.advogado||'').includes('/')).length;
+
+  // Prazos por advogado: ativas COM data_prazo definida
+  const prazosJonathan = ativas.filter(c => c.data_prazo && (c.advogado||'').includes('Jonathan')).length;
+  const prazosAldo = ativas.filter(c => c.data_prazo && (c.advogado||'').includes('Aldo')).length;
+  document.getElementById('s-prazos-jonathan').textContent = prazosJonathan;
+  document.getElementById('s-prazos-aldo').textContent = prazosAldo;
+  document.getElementById('qtd-ativas').textContent = ativas.length;
+  document.getElementById('qtd-pendentes').textContent = pendentes.length;
+  // Ativas excluindo "Sem Retorno/Red" — base para os filtros de advogado
+  const ativasContaveis = ativas.filter(c => (c.secao_judiciaria||'') !== 'Sem Retorno/Red');
+  document.getElementById('b-todos').textContent = ativasContaveis.length;
+  document.getElementById('b-jonathan').textContent = ativasContaveis.filter(c=>(c.advogado||'').includes('Jonathan')).length;
+  document.getElementById('b-aldo').textContent = ativasContaveis.filter(c=>(c.advogado||'').includes('Aldo')).length;
+  const elAmbos = document.getElementById('b-ambos');
+  if (elAmbos) elAmbos.textContent = ativasContaveis.filter(c => {
+    const adv = c.advogado || '';
+    return adv.includes('Jonathan') || adv.includes('Aldo');
+  }).length;
+  document.getElementById('b-urgente').textContent = ativas.filter(c=>c.status==='urgente').length;
+  const setBadge = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  setBadge('b-pend-todos', pendentes.length);
+  ['sem-retorno','sem-documentos','numero-incorreto','sem-vinculo','aguardando-captador',
+   'desistiu','outro-advogado','ja-resolveu','prescrito','litispendencia','prazo-perdido']
+    .forEach(m => setBadge('b-pend-'+m, pendentes.filter(c => c.motivo_pendencia === m).length));
+}
+
+function setFilter(type, value, el) {
+  currentFilter = {type, value};
+  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {todos:'Todas as Clientes',Jonathan:'Jonathan — TRF1 Rural',Aldo:'Aldo','Jonathan+Aldo':'Jonathan + Aldo (todos os prazos)',
+    urgente:'🔴 Urgentes',dilacao:'⏳ Dilação Pedida','sem-contato':'📵 Sem Contato',
+    aguardando:'🔄 Aguardando Retorno',concluido:'✅ Concluídos'};
+  if (type === 'motivoPendencia') {
+    document.getElementById('section-title').textContent = '⏸ Pendências — ' + (value === 'todos' ? 'Todas' : (motivoLabel[value]||value));
+  } else {
+    document.getElementById('section-title').textContent = titles[value] || value;
+  }
+  renderTable();
+}
+
+function filtrarPrazosAdvogado(advogado) {
+  // Garante que está no modo Ativas (prazos só fazem sentido em ativas)
+  if (modoAtual !== 'ativas') setModo('ativas');
+  // Aplica filtro especial: só ativas desse advogado COM prazo definido, ordenadas por data
+  currentFilter = {type:'prazoAdvogado', value:advogado};
+  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('section-title').textContent = `📅 Prazos do ${advogado} (com data definida)`;
+  // Forçar ordenação por prazo (mais próximos primeiro)
+  document.getElementById('sort-sel').value = 'prazo';
+  renderTable();
+}
+
+// ════════════════════════════════════════════════════════════════
+// PAINEL DE DETALHES
+// ════════════════════════════════════════════════════════════════
+function openDetail(id) {
+  try {
+    editandoCampo = null;
+    const c = clientes.find(x => x.id === id);
+    if (!c) { showToast('⚠ Cliente não encontrada'); return; }
+    currentDetailId = id;
+    const setTxt = (el, val) => { const e = document.getElementById(el); if (e) e.textContent = val == null ? '' : String(val); };
+    const setStyle = (el, p, v) => { const e = document.getElementById(el); if (e) e.style[p] = v; };
+    setTxt('dp-nome', c.nome || '(sem nome)');
+    setTxt('dp-nome-val', c.nome || '');
+    setTxt('dp-sub', `${c.advogado||''} — ${c.secao_judiciaria||''}`);
+    setTxt('dp-adv', c.advogado || '—');
+    setTxt('dp-cidade', c.secao_judiciaria || '—');
+    setTxt('dp-data', c.data_prazo ? c.data_prazo.split('-').reverse().join('/') : 'Sem prazo definido');
+    setTxt('dp-tel', c.telefone || 'Não informado');
+    setTxt('dp-doc', c.o_que_precisa || '—');
+    setTxt('dp-obs', c.observacoes || '—');
+    setTxt('dp-status', statusLabel[c.status] || c.status || '—');
+    setStyle('btn-wpp', 'display', c.telefone ? '' : 'none');
+    const bP = document.getElementById('dp-banner-pendente');
+    const bA = document.getElementById('dp-banner-ativa');
+    if (c.pendente) {
+      if (bP) bP.style.display = '';
+      if (bA) bA.style.display = 'none';
+      setTxt('dp-motivo-pendente', motivoLabel[c.motivo_pendencia] || c.motivo_pendencia || 'sem motivo');
+    } else {
+      if (bP) bP.style.display = 'none';
+      if (bA) bA.style.display = '';
+    }
+    renderHistorico(c);
+    document.getElementById('hist-texto').value = '';
+    document.getElementById('detail-overlay').classList.add('open');
+    document.getElementById('detail-panel').classList.add('open');
+  } catch (e) {
+    console.error('Erro ao abrir cliente:', e, 'id:', id);
+    showToast('⚠ Erro ao abrir cliente');
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+  currentDetailId = null;
+}
+
+function renderHistorico(c) {
+  const lista = document.getElementById('historico-list');
+  if (!c.historico || !c.historico.length) {
+    lista.innerHTML = '<div class="historico-empty">Nenhuma anotação registrada ainda.</div>';
+    return;
+  }
+  const tipoLabel = {nota:'📝 Nota',resposta:'💬 Resposta',andamento:'⚖ Andamento',contato:'📞 Contato',edicao:'✏ Edição',status:'🔄 Status'};
+  const ordenado = [...c.historico].sort((a,b) => (b.quando||'').localeCompare(a.quando||''));
+  lista.innerHTML = ordenado.map(h => {
+    const dt = new Date(h.quando);
+    const data = dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    const autor = h.usuario_nome ? ` · ${escapeHtml(h.usuario_nome)}` : '';
+    return `<div class="historico-item">
+      <div class="historico-meta">${tipoLabel[h.tipo]||h.tipo} · ${data}${autor}</div>
+      <div class="historico-texto">${escapeHtml(h.texto)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function adicionarHistorico(tipo) {
+  if (!currentDetailId) return;
+  const texto = document.getElementById('hist-texto').value.trim();
+  if (!texto) { showToast('⚠ Digite algo'); return; }
+  const { error } = await sb.from('historico_clientes').insert({
+    cliente_id: currentDetailId, tipo, texto,
+    usuario_id: perfilAtual?.id, usuario_nome: perfilAtual?.nome || 'Usuário'
+  });
+  if (error) { showToast('❌ ' + error.message); return; }
+  document.getElementById('hist-texto').value = '';
+  await carregarClientes();
+  openDetail(currentDetailId);
+  showToast('✓ Anotação salva');
+}
+
+// ════════════════════════════════════════════════════════════════
+// EDIÇÃO INLINE
+// ════════════════════════════════════════════════════════════════
+function ativarEdicao(elemento, campo) {
+  if (editandoCampo && editandoCampo !== elemento) cancelarEdicao();
+  if (elemento.classList.contains('editavel-ativo')) return;
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c) return;
+  editandoCampo = elemento;
+  const valorAtual = c[campo] || '';
+  elemento.classList.add('editavel-ativo');
+  let html = '<div class="edit-wrapper">';
+  if (campo === 'data_prazo') {
+    html += `<input type="date" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}">`;
+  } else if (campo === 'telefone') {
+    html += `<input type="tel" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}">`;
+  } else if (campo === 'nome') {
+    html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}">`;
+  } else if (campo === 'o_que_precisa' || campo === 'observacoes') {
+    html += `<textarea class="edit-textarea" id="edit-input-field">${escapeHtml(valorAtual)}</textarea>`;
+  } else if (campo === 'status') {
+    html += `<select class="edit-select" id="edit-input-field">
+      <option value="aguardando" ${valorAtual==='aguardando'?'selected':''}>🔄 Aguardando</option>
+      <option value="sem-contato" ${valorAtual==='sem-contato'?'selected':''}>📵 Sem contato</option>
+      <option value="dilacao" ${valorAtual==='dilacao'?'selected':''}>⏳ Dilação</option>
+      <option value="urgente" ${valorAtual==='urgente'?'selected':''}>🔴 Urgente</option>
+      <option value="concluido" ${valorAtual==='concluido'?'selected':''}>✅ Concluído</option>
+    </select>`;
+  } else if (campo === 'secao_judiciaria') {
+    html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}" list="dl-secoes">`;
+  } else if (campo === 'advogado') {
+    html += '<select class="edit-select" id="edit-input-field">';
+    advogadosDisponiveis.forEach(a => { html += `<option value="${a}" ${a===valorAtual?'selected':''}>${a}</option>`; });
+    html += '</select>';
+  }
+  html += `<div class="edit-actions">
+    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();salvarEdicao('${campo}')">✓ Salvar</button>
+    <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();cancelarEdicao()">Cancelar</button>
+  </div><div class="edit-hint">Enter para salvar · Esc para cancelar</div></div>`;
+  elemento.innerHTML = html;
+  elemento.onclick = (e) => e.stopPropagation();
+  const input = document.getElementById('edit-input-field');
+  input.focus();
+  if (input.select) input.select();
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.tagName !== 'TEXTAREA') { e.preventDefault(); salvarEdicao(campo); }
+    else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); salvarEdicao(campo); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelarEdicao(); }
+  });
+}
+
+async function salvarEdicao(campo) {
+  if (!editandoCampo || !currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c) return;
+  const input = document.getElementById('edit-input-field');
+  const novoValor = input.value.trim();
+  const valorAntigo = c[campo] || '';
+  if (campo === 'nome' && !novoValor) { showToast('⚠ Nome obrigatório'); return; }
+  if (novoValor === valorAntigo) { cancelarEdicao(); return; }
+
+  const labelCampo = {nome:'Nome', advogado:'Advogado', secao_judiciaria:'Seção',
+    data_prazo:'Prazo', telefone:'Telefone', o_que_precisa:'O que precisa',
+    observacoes:'Observação', status:'Status'}[campo] || campo;
+
+  const fmt = v => campo === 'data_prazo' ? (v?v.split('-').reverse().join('/'):'sem') : (v||'vazio');
+  const descricao = `${labelCampo}: "${fmt(valorAntigo)}" → "${fmt(novoValor)}"`;
+
+  // Atualiza no banco
+  const update = { [campo]: novoValor || null, atualizado_em: new Date().toISOString(), atualizado_por: perfilAtual?.id };
+  const { error } = await sb.from('clientes').update(update).eq('id', currentDetailId);
+  if (error) { showToast('❌ ' + error.message); return; }
+
+  // Registra histórico
+  await sb.from('historico_clientes').insert({
+    cliente_id: currentDetailId,
+    tipo: campo === 'status' ? 'status' : 'edicao',
+    texto: descricao,
+    usuario_id: perfilAtual?.id,
+    usuario_nome: perfilAtual?.nome || 'Usuário'
+  });
+
+  editandoCampo = null;
+  await carregarClientes();
+  openDetail(currentDetailId);
+  showToast('✓ Atualizado');
+}
+
+function cancelarEdicao() {
+  if (!editandoCampo || !currentDetailId) return;
+  editandoCampo = null;
+  openDetail(currentDetailId);
+}
+
+// ════════════════════════════════════════════════════════════════
+// MOVER ENTRE ATIVAS / PENDENTES
+// ════════════════════════════════════════════════════════════════
+async function moverParaAtivas() {
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c) return;
+  if (!confirm(`Mover "${c.nome}" para ATIVAS?`)) return;
+  const motivoAntigo = motivoLabel[c.motivo_pendencia] || 'pendente';
+  await sb.from('clientes').update({ pendente: false, motivo_pendencia: null }).eq('id', currentDetailId);
+  await sb.from('historico_clientes').insert({
+    cliente_id: currentDetailId, tipo:'edicao',
+    texto: `Movida para ATIVAS (estava em "${motivoAntigo}")`,
+    usuario_id: perfilAtual?.id, usuario_nome: perfilAtual?.nome
+  });
+  await carregarClientes();
+  openDetail(currentDetailId);
+  showToast('✓ Movida para Ativas');
+}
+
+async function moverParaPendentes() {
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c) return;
+  const motivos = ['sem-retorno','sem-documentos','numero-incorreto','sem-vinculo','aguardando-captador','desistiu','outro-advogado','ja-resolveu','prescrito','litispendencia','prazo-perdido'];
+  let lista = 'Selecione o motivo:\n\n';
+  motivos.forEach((m, i) => { lista += `${i+1}. ${motivoLabel[m]}\n`; });
+  const escolha = prompt(lista + '\nDigite o número:');
+  if (!escolha) return;
+  const idx = parseInt(escolha, 10) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= motivos.length) { alert('Opção inválida'); return; }
+  await sb.from('clientes').update({ pendente: true, motivo_pendencia: motivos[idx] }).eq('id', currentDetailId);
+  await sb.from('historico_clientes').insert({
+    cliente_id: currentDetailId, tipo:'edicao',
+    texto: `Movida para PENDÊNCIAS — ${motivoLabel[motivos[idx]]}`,
+    usuario_id: perfilAtual?.id, usuario_nome: perfilAtual?.nome
+  });
+  await carregarClientes();
+  openDetail(currentDetailId);
+  showToast('⏸ Movida para Pendências');
+}
+
+async function alterarMotivoPendencia() {
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c || !c.pendente) return;
+  const motivos = ['sem-retorno','sem-documentos','numero-incorreto','sem-vinculo','aguardando-captador','desistiu','outro-advogado','ja-resolveu','prescrito','litispendencia','prazo-perdido'];
+  let lista = `Motivo atual: ${motivoLabel[c.motivo_pendencia]||'?'}\n\nNovo motivo:\n\n`;
+  motivos.forEach((m, i) => { lista += `${i+1}. ${motivoLabel[m]}\n`; });
+  const escolha = prompt(lista + '\nDigite o número:');
+  if (!escolha) return;
+  const idx = parseInt(escolha, 10) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= motivos.length) return;
+  const motivoAntigo = motivoLabel[c.motivo_pendencia] || c.motivo_pendencia;
+  await sb.from('clientes').update({ motivo_pendencia: motivos[idx] }).eq('id', currentDetailId);
+  await sb.from('historico_clientes').insert({
+    cliente_id: currentDetailId, tipo:'edicao',
+    texto: `Motivo alterado: ${motivoAntigo} → ${motivoLabel[motivos[idx]]}`,
+    usuario_id: perfilAtual?.id, usuario_nome: perfilAtual?.nome
+  });
+  await carregarClientes();
+  openDetail(currentDetailId);
+  showToast('✓ Motivo atualizado');
+}
+
+// ════════════════════════════════════════════════════════════════
+// AÇÕES
+// ════════════════════════════════════════════════════════════════
+function abrirWhatsapp() {
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c || !c.telefone) return;
+  let num = c.telefone.replace(/\D/g, '');
+  if (num.length >= 10 && !num.startsWith('55')) num = '55' + num;
+  window.open(`https://wa.me/${num}`, '_blank');
+}
+
+async function excluirCliente() {
+  if (!currentDetailId) return;
+  const c = clientes.find(x => x.id === currentDetailId);
+  if (!c) return;
+  if (!confirm(`Excluir definitivamente "${c.nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+  const { error } = await sb.from('clientes').delete().eq('id', currentDetailId);
+  if (error) { showToast('❌ ' + error.message); return; }
+  closeDetail();
+  await carregarClientes();
+  showToast('🗑 Cliente excluída');
+}
+
+// MODAL
+function openModal() {
+  editandoId = null;
+  document.getElementById('modal-titulo').textContent = '➕ Nova Cliente';
+  document.getElementById('btn-salvar').textContent = 'Salvar';
+  ['f-id','f-nome','f-data','f-tel','f-doc','f-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-adv').value = 'Jonathan';
+  document.getElementById('f-cidade').value = 'SJBA';
+  document.getElementById('f-status').value = 'aguardando';
+  const ePend = (modoAtual === 'pendentes');
+  document.getElementById('f-pendente').checked = ePend;
+  document.getElementById('f-motivo-wrap').style.display = ePend ? 'block' : 'none';
+  document.getElementById('f-motivo').value = 'sem-retorno';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>document.getElementById('f-nome').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editandoId = null;
+}
+
+async function salvarCliente() {
+  const nome = document.getElementById('f-nome').value.trim();
+  if (!nome) { showToast('⚠ Informe o nome'); return; }
+  const ePend = document.getElementById('f-pendente').checked;
+  const dados = {
+    nome,
+    advogado: document.getElementById('f-adv').value,
+    secao_judiciaria: document.getElementById('f-cidade').value,
+    data_prazo: document.getElementById('f-data').value || null,
+    telefone: document.getElementById('f-tel').value.trim() || null,
+    o_que_precisa: document.getElementById('f-doc').value.trim() || null,
+    observacoes: document.getElementById('f-obs').value.trim() || null,
+    status: document.getElementById('f-status').value,
+    pendente: ePend,
+    motivo_pendencia: ePend ? document.getElementById('f-motivo').value : null,
+    criado_por: perfilAtual?.id
+  };
+  const { data, error } = await sb.from('clientes').insert(dados).select().single();
+  if (error) { showToast('❌ ' + error.message); return; }
+  await sb.from('historico_clientes').insert({
+    cliente_id: data.id, tipo:'edicao',
+    texto: ePend ? `Cliente cadastrada como pendente (${motivoLabel[dados.motivo_pendencia]})` : 'Cliente cadastrada',
+    usuario_id: perfilAtual?.id, usuario_nome: perfilAtual?.nome
+  });
+  closeModal();
+  await carregarClientes();
+  showToast('✓ Cliente cadastrada');
+}
+
+// BACKUP
+async function exportarBackup() {
+  const dados = JSON.stringify(clientes, null, 2);
+  const blob = new Blob([dados], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date();
+  a.download = `backup-prazos-${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}.json`;
+  a.href = url;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 Backup baixado');
+}
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Listener para fechar edição inline
+document.addEventListener('click', e => {
+  if (editandoCampo && !editandoCampo.contains(e.target)) {
+    if (document.getElementById('detail-panel').contains(e.target)) {
+      cancelarEdicao();
+    }
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// CONFIGURAÇÕES — gestão de cadastros (admin only)
+// ════════════════════════════════════════════════════════════════
+const cadConfig = {
+  secoes_judiciarias: {
+    titulo: '📍 Seções Judiciárias',
+    sub: 'Locais onde as ações tramitam (varas, subseções, cidades). Use o campo "ordem" para definir a sequência de exibição.',
+    campos: [
+      { nome: 'nome', label: 'Nome da seção', tipo: 'text', obrigatorio: true, placeholder: 'Ex: SJBA, Ilhéus/BA' },
+      { nome: 'uf', label: 'UF', tipo: 'text', placeholder: 'BA, MA, etc' },
+      { nome: 'ordem', label: 'Ordem (menor número aparece primeiro)', tipo: 'text', placeholder: '1, 2, 3...' }
+    ],
+    tabela: 'secoes_judiciarias',
+    aoSalvar: () => carregarSecoes()
+  },
+  advogados: {
+    titulo: '⚖ Advogados',
+    sub: 'Pessoas que assinam as petições',
+    campos: [
+      { nome: 'nome', label: 'Nome do advogado', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Jonathan, Aldo' }
+    ],
+    tabela: 'advogados',
+    aoSalvar: () => carregarAdvogados()
+  },
+  captadores: {
+    titulo: '🔍 Captadores',
+    sub: 'Pessoas que captam clientes em diferentes localidades',
+    campos: [
+      { nome: 'nome', label: 'Nome do captador', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Zé Tonel, Silas' },
+      { nome: 'cidade', label: 'Cidade/Região', tipo: 'text', placeholder: 'Ex: Candeias, Vera Cruz' },
+      { nome: 'observacao', label: 'Observação', tipo: 'textarea', placeholder: 'Notas sobre esse captador' }
+    ],
+    tabela: 'captadores'
+  },
+  tribunais: {
+    titulo: '🏛 Tribunais',
+    sub: 'Tribunais e sistemas processuais',
+    campos: [
+      { nome: 'sigla', label: 'Sigla', tipo: 'text', obrigatorio: true, placeholder: 'TRF1, TRF5, EPROC' },
+      { nome: 'nome', label: 'Nome completo', tipo: 'text', placeholder: 'Tribunal Regional Federal da 1ª Região' }
+    ],
+    tabela: 'tribunais'
+  },
+  tipos_segurado: {
+    titulo: '👤 Tipos de Segurado',
+    sub: 'Categorias previdenciárias dos clientes',
+    campos: [
+      { nome: 'nome', label: 'Nome', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Rural, Facultativo' },
+      { nome: 'descricao', label: 'Descrição', tipo: 'textarea' }
+    ],
+    tabela: 'tipos_segurado'
+  },
+  tipos_beneficio: {
+    titulo: '💼 Tipos de Benefício',
+    sub: 'Benefícios que o escritório pleiteia',
+    campos: [
+      { nome: 'nome', label: 'Nome do benefício', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Salário-maternidade' },
+      { nome: 'descricao', label: 'Descrição', tipo: 'textarea' }
+    ],
+    tabela: 'tipos_beneficio'
+  },
+  motivos_pendencia: {
+    titulo: '⏸ Motivos de Pendência',
+    sub: 'Razões pelas quais um caso fica pendente',
+    campos: [
+      { nome: 'codigo', label: 'Código (sem espaços, com hifens)', tipo: 'text', obrigatorio: true, placeholder: 'sem-retorno' },
+      { nome: 'nome', label: 'Nome', tipo: 'text', obrigatorio: true, placeholder: 'Sem retorno' },
+      { nome: 'emoji', label: 'Emoji', tipo: 'text', placeholder: '📵' }
+    ],
+    tabela: 'motivos_pendencia'
+  },
+  status_processo: {
+    titulo: '🚦 Status de Processo',
+    sub: 'Estados em que cada cliente pode estar',
+    campos: [
+      { nome: 'codigo', label: 'Código', tipo: 'text', obrigatorio: true, placeholder: 'aguardando' },
+      { nome: 'nome', label: 'Nome', tipo: 'text', obrigatorio: true, placeholder: 'Aguardando retorno' },
+      { nome: 'emoji', label: 'Emoji', tipo: 'text', placeholder: '🔄' },
+      { nome: 'cor', label: 'Cor', tipo: 'select', opcoes: ['blue','green','red','orange','purple','gray'] }
+    ],
+    tabela: 'status_processo'
+  }
+};
+
+let abaConfigAtual = 'secoes_judiciarias';
+let editandoCadId = null;
+
+function abrirConfiguracoes() {
+  document.getElementById('modal-config').classList.add('open');
+  carregarAbaConfig();
+}
+
+function fecharConfiguracoes() {
+  document.getElementById('modal-config').classList.remove('open');
+  cancelarFormCad();
+}
+
+function mudarAbaConfig(aba, btn) {
+  abaConfigAtual = aba;
+  document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  cancelarFormCad();
+  carregarAbaConfig();
+}
+
+async function carregarAbaConfig() {
+  const cfg = cadConfig[abaConfigAtual];
+  document.getElementById('config-titulo').textContent = cfg.titulo;
+  document.getElementById('config-sub').textContent = cfg.sub;
+
+  const lista = document.getElementById('config-lista');
+  lista.innerHTML = '<div class="cad-empty">Carregando...</div>';
+
+  // Para seções, ordena por "ordem" e depois nome; pras outras, por nome
+  let query = sb.from(cfg.tabela).select('*');
+  if (abaConfigAtual === 'secoes_judiciarias') {
+    query = query.order('ordem', { ascending: true }).order('nome');
+  } else {
+    query = query.order('nome', { ascending: true });
+  }
+  const { data, error } = await query;
+  if (error) {
+    lista.innerHTML = '<div class="cad-empty">❌ Erro: ' + escapeHtml(error.message) + '</div>';
+    return;
+  }
+  if (!data || !data.length) {
+    lista.innerHTML = '<div class="cad-empty">Nenhum cadastro ainda. Clique em "+ Adicionar" pra criar.</div>';
+    return;
+  }
+  lista.innerHTML = data.map(item => {
+    const titulo = item.nome || item.sigla || item.codigo || '?';
+    const subInfo = [];
+    if (item.descricao) subInfo.push(item.descricao);
+    if (item.cidade) subInfo.push('📍 ' + item.cidade);
+    if (item.uf) subInfo.push(item.uf);
+    if (item.codigo && item.nome) subInfo.push('código: ' + item.codigo);
+    if (item.observacao) subInfo.push(item.observacao);
+    const prefixoOrdem = (abaConfigAtual === 'secoes_judiciarias' && item.ordem != null && item.ordem < 999)
+      ? `<span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;padding:1px 7px;border-radius:10px;margin-right:6px">${item.ordem}</span>`
+      : '';
+    return `<div class="cad-item ${item.ativo === false ? 'inativo' : ''}">
+      <div class="cad-info">
+        ${prefixoOrdem}<strong>${item.emoji ? item.emoji + ' ' : ''}${escapeHtml(titulo)}</strong>
+        ${subInfo.length ? `<small>${escapeHtml(subInfo.join(' · '))}</small>` : ''}
+      </div>
+      <div class="cad-acoes">
+        <button class="btn btn-ghost btn-sm" onclick="editarCadastro(${item.id})">✏</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirCadastro(${item.id}, ${JSON.stringify(titulo).replace(/"/g,'&quot;')})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function novoCadastro() {
+  editandoCadId = null;
+  mostrarFormCadastro({});
+}
+
+async function editarCadastro(id) {
+  const cfg = cadConfig[abaConfigAtual];
+  const { data, error } = await sb.from(cfg.tabela).select('*').eq('id', id).single();
+  if (error) { showToast('❌ ' + error.message); return; }
+  editandoCadId = id;
+  mostrarFormCadastro(data);
+}
+
+function mostrarFormCadastro(valores) {
+  const cfg = cadConfig[abaConfigAtual];
+  const form = document.getElementById('config-form-novo');
+  let html = '<div style="font-size:13px; font-weight:600; margin-bottom:10px">' +
+             (editandoCadId ? '✏ Editar' : '+ Adicionar novo') + '</div>';
+  cfg.campos.forEach(c => {
+    const val = valores[c.nome] || '';
+    html += '<div class="form-group">';
+    html += `<label class="form-label">${escapeHtml(c.label)}${c.obrigatorio ? ' *' : ''}</label>`;
+    if (c.tipo === 'textarea') {
+      html += `<textarea class="form-input form-input-full" id="cad-${c.nome}" rows="2" placeholder="${escapeHtml(c.placeholder||'')}">${escapeHtml(val)}</textarea>`;
+    } else if (c.tipo === 'select') {
+      html += `<select class="form-input form-input-full" id="cad-${c.nome}">`;
+      c.opcoes.forEach(o => { html += `<option value="${o}" ${o===val?'selected':''}>${o}</option>`; });
+      html += '</select>';
+    } else {
+      html += `<input type="text" class="form-input form-input-full" id="cad-${c.nome}" value="${escapeHtml(val)}" placeholder="${escapeHtml(c.placeholder||'')}">`;
+    }
+    html += '</div>';
+  });
+  html += `<div class="cad-form-actions">
+    <button class="btn btn-ghost btn-sm" onclick="cancelarFormCad()">Cancelar</button>
+    <button class="btn btn-primary btn-sm" onclick="salvarCadastro()">${editandoCadId ? 'Salvar alterações' : 'Adicionar'}</button>
+  </div>`;
+  form.innerHTML = html;
+  form.style.display = 'block';
+  setTimeout(() => {
+    const primeiro = form.querySelector('input, textarea');
+    if (primeiro) primeiro.focus();
+  }, 50);
+}
+
+function cancelarFormCad() {
+  document.getElementById('config-form-novo').style.display = 'none';
+  document.getElementById('config-form-novo').innerHTML = '';
+  editandoCadId = null;
+}
+
+async function salvarCadastro() {
+  const cfg = cadConfig[abaConfigAtual];
+  const dados = {};
+  for (const c of cfg.campos) {
+    const el = document.getElementById('cad-' + c.nome);
+    if (!el) continue;
+    const val = (el.value || '').trim();
+    if (c.obrigatorio && !val) {
+      showToast('⚠ Preencha "' + c.label + '"');
+      el.focus();
+      return;
+    }
+    // converte "ordem" pra número
+    if (c.nome === 'ordem' && val) {
+      const n = parseInt(val, 10);
+      dados[c.nome] = isNaN(n) ? 999 : n;
+    } else {
+      dados[c.nome] = val || null;
+    }
+  }
+  // sempre marca como ativo ao adicionar/editar
+  if (!editandoCadId) dados.ativo = true;
+
+  let error;
+  if (editandoCadId) {
+    ({ error } = await sb.from(cfg.tabela).update(dados).eq('id', editandoCadId));
+  } else {
+    ({ error } = await sb.from(cfg.tabela).insert(dados));
+  }
+  if (error) {
+    if (error.code === '23505') showToast('❌ Já existe um cadastro com esse nome');
+    else showToast('❌ ' + error.message);
+    return;
+  }
+  showToast(editandoCadId ? '✓ Atualizado' : '✓ Adicionado');
+  cancelarFormCad();
+  await carregarAbaConfig();
+  if (cfg.aoSalvar) await cfg.aoSalvar();
+  renderTable();
+}
+
+async function excluirCadastro(id, nome) {
+  if (!confirm(`Excluir "${nome}"?\n\nIsso vai removê-lo da lista. Clientes que já estão usando esse valor não serão afetadas — só vai sumir das opções de cadastro.`)) return;
+  const cfg = cadConfig[abaConfigAtual];
+  const { error } = await sb.from(cfg.tabela).delete().eq('id', id);
+  if (error) {
+    showToast('❌ ' + error.message);
+    return;
+  }
+  showToast('🗑 Removido');
+  await carregarAbaConfig();
+  if (cfg.aoSalvar) await cfg.aoSalvar();
+}
+
+// INIT
+verificarSessao();
+</script>
+</body>
+</html>
