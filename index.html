@@ -278,6 +278,29 @@
   .historico-add textarea:focus { border-color:var(--accent); }
   .historico-add-actions { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
 
+  .filtro-segurado-wrap { display:flex; gap:4px; }
+  .filtro-seg-btn {
+    padding:6px 12px; border-radius:20px; border:1px solid var(--border);
+    background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif;
+    font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  }
+  .filtro-seg-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .filtro-seg-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .filtro-seg-btn.rural.active { background:#059669; border-color:#059669; }
+  .filtro-seg-btn.fac.active { background:var(--purple); border-color:var(--purple); }
+  .tribunal-grupo { margin-bottom:4px; }
+  .tribunal-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:7px 16px; cursor:pointer; font-size:12px; font-weight:600;
+    color:var(--accent); letter-spacing:0.3px; user-select:none;
+    border-left:3px solid var(--accent); background:rgba(37,99,235,0.06);
+  }
+  .tribunal-header:hover { background:rgba(37,99,235,0.1); }
+  .tribunal-header .tri-toggle { font-size:10px; color:var(--muted); }
+  .tribunal-secoes { display:none; }
+  .tribunal-secoes.aberto { display:block; }
+  .tribunal-secoes .sidebar-item { padding-left:24px; font-size:12px; }
+
   /* CONFIG MODAL */
   .config-tabs {
     display:flex; gap:2px; padding:0 12px; border-bottom:1px solid var(--border);
@@ -376,6 +399,11 @@
     </div>
     <div class="header-right">
       <input type="text" class="search-box" id="search-input" placeholder="🔍 Buscar..." oninput="renderTable()">
+      <div class="filtro-segurado-wrap">
+        <button class="filtro-seg-btn active" id="fseg-todos" onclick="setFiltroSegurado('todos',this)">Todos</button>
+        <button class="filtro-seg-btn rural" id="fseg-rural" onclick="setFiltroSegurado('Rural',this)">🌾 Rural</button>
+        <button class="filtro-seg-btn fac" id="fseg-fac" onclick="setFiltroSegurado('Facultativo',this)">📋 Facultativo</button>
+      </div>
       <select class="form-input" id="sort-sel" onchange="renderTable()">
         <option value="prazo">Por prazo</option>
         <option value="atualizada">Mais atualizadas</option>
@@ -449,6 +477,10 @@
           <div class="sidebar-item" onclick="setFilter('status','sem-contato',this)">📵 Sem contato</div>
           <div class="sidebar-item" onclick="setFilter('status','aguardando',this)">🔄 Aguardando</div>
           <div class="sidebar-item" onclick="setFilter('status','concluido',this)">✅ Concluído</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-label">Tipo de Benefício</div>
+          <div id="lista-beneficios-sidebar"></div>
         </div>
       </div>
 
@@ -524,6 +556,20 @@
           <input type="text" class="form-input form-input-full" id="f-cidade" list="dl-secoes">
           <datalist id="dl-secoes"></datalist>
         </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tribunal</label>
+          <input type="text" class="form-input form-input-full" id="f-tribunal" list="dl-tribunais" placeholder="TRF1, TRF5...">
+          <datalist id="dl-tribunais"></datalist>
+        </div>
+        <div class="form-group"><label class="form-label">Tipo de Segurado</label>
+          <input type="text" class="form-input form-input-full" id="f-segurado" list="dl-segurados" placeholder="Rural, Facultativo...">
+          <datalist id="dl-segurados"></datalist>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Tipo de Benefício</label>
+        <input type="text" class="form-input form-input-full" id="f-beneficio" list="dl-beneficios" placeholder="Salário-maternidade, Aposentadoria...">
+        <datalist id="dl-beneficios"></datalist>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Prazo</label>
@@ -612,6 +658,21 @@
     <div class="detail-row"><div class="detail-key">Seção Judiciária</div>
       <div class="detail-val editavel" data-campo="secao_judiciaria">
         <span class="campo-valor" id="dp-cidade"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'secao_judiciaria')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Tribunal</div>
+      <div class="detail-val editavel" data-campo="tribunal">
+        <span class="campo-valor" id="dp-tribunal"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'tribunal')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Tipo de Segurado</div>
+      <div class="detail-val editavel" data-campo="tipo_segurado">
+        <span class="campo-valor" id="dp-segurado"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'tipo_segurado')" title="Clique para editar">✏ editar</span>
+      </div>
+    </div>
+    <div class="detail-row"><div class="detail-key">Tipo de Benefício</div>
+      <div class="detail-val editavel" data-campo="tipo_beneficio">
+        <span class="campo-valor" id="dp-beneficio"></span><span class="edit-icon" onclick="event.stopPropagation();ativarEdicao(this.parentElement,'tipo_beneficio')" title="Clique para editar">✏ editar</span>
       </div>
     </div>
     <div class="detail-row"><div class="detail-key">Prazo</div>
@@ -723,6 +784,7 @@ let currentDetailId = null;
 let editandoId = null;
 let modoAtual = 'ativas';
 let editandoCampo = null;
+let filtroSegurado = 'todos'; // 'todos', 'Rural', 'Facultativo'
 
 const motivoLabel = {
   'sem-retorno':'📵 Sem retorno','sem-documentos':'❌ Sem documentação',
@@ -795,6 +857,7 @@ async function iniciarApp() {
   }
   await carregarSecoes();
   await carregarAdvogados();
+  await carregarTipos();
   await carregarClientes();
   setupRealtime();
 }
@@ -810,19 +873,102 @@ async function carregarPerfil() {
 }
 
 async function carregarSecoes() {
-  const { data } = await sb.from('secoes_judiciarias').select('nome,ordem').eq('ativo', true).order('ordem', { ascending: true }).order('nome');
-  if (data) {
-    secoesDisponiveis = data.map(s => s.nome);
-    const dl = document.getElementById('dl-secoes');
-    dl.innerHTML = secoesDisponiveis.map(s => `<option value="${escapeHtml(s)}">`).join('');
-    // popula sidebar lateral também
-    const cores = ['#2563eb','#5cc98a','#dc2626','#ea580c','#7c3aed','#0891b2','#db2777','#ca8a04'];
-    const sb_lista = document.getElementById('lista-secoes-sidebar');
-    if (sb_lista) {
-      sb_lista.innerHTML = secoesDisponiveis.map((s, i) =>
-        `<div class="sidebar-item" onclick="setFilter('cidade','${escapeHtml(s).replace(/'/g,'\\\'')}',this)"><span class="dot" style="background:${cores[i % cores.length]};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px"></span>${escapeHtml(s)}</div>`
-      ).join('');
+  // Tenta buscar com coluna tribunal, com fallback se não existir
+  let data;
+  const r1 = await sb.from('secoes_judiciarias').select('nome,ordem,tribunal').eq('ativo', true).order('ordem', { ascending: true }).order('nome');
+  if (!r1.error) {
+    data = r1.data;
+  } else {
+    // fallback sem tribunal
+    const r2 = await sb.from('secoes_judiciarias').select('nome,ordem').eq('ativo', true).order('ordem', { ascending: true }).order('nome');
+    data = (r2.data || []).map(s => ({...s, tribunal: 'TRF1'}));
+  }
+
+  if (!data) data = [];
+  secoesDisponiveis = data.map(s => s.nome);
+  const dl = document.getElementById('dl-secoes');
+  if (dl) dl.innerHTML = secoesDisponiveis.map(s => `<option value="${escapeHtml(s)}">`).join('');
+
+  // Agrupa por tribunal no sidebar
+  const grupos = {};
+  data.forEach(s => {
+    const trib = s.tribunal || 'TRF1';
+    if (!grupos[trib]) grupos[trib] = [];
+    grupos[trib].push(s.nome);
+  });
+
+  const sb_lista = document.getElementById('lista-secoes-sidebar');
+  if (sb_lista) {
+    if (Object.keys(grupos).length === 0) {
+      sb_lista.innerHTML = '<div style="padding:8px 16px;font-size:12px;color:var(--muted)">Nenhuma seção cadastrada</div>';
+      return;
     }
+    sb_lista.innerHTML = Object.entries(grupos).map(([trib, secoes]) => {
+      const id = 'tri-' + trib.replace(/[^a-z0-9]/gi,'');
+      return `<div class="tribunal-grupo">
+        <div class="tribunal-header" onclick="toggleTribunal('${id}')">
+          🏛 ${escapeHtml(trib)} <span class="tri-toggle">▼</span>
+        </div>
+        <div class="tribunal-secoes" id="${id}">
+          ${secoes.map(s =>
+            `<div class="sidebar-item" onclick="setFilter('cidade','${escapeHtml(s).replace(/'/g,"\\'")}',this)">${escapeHtml(s)}</div>`
+          ).join('')}
+        </div>
+      </div>`;
+    }).join('');
+    // Abre o primeiro grupo por padrão
+    const primeiroGrupo = sb_lista.querySelector('.tribunal-secoes');
+    if (primeiroGrupo) primeiroGrupo.classList.add('aberto');
+  }
+}
+
+function toggleTribunal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('aberto');
+  const header = el.previousElementSibling;
+  if (header) {
+    const toggle = header.querySelector('.tri-toggle');
+    if (toggle) toggle.textContent = el.classList.contains('aberto') ? '▲' : '▼';
+  }
+}
+
+async function carregarTipos() {
+  // Tipos de segurado
+  const { data: segurados } = await sb.from('tipos_segurado').select('nome').eq('ativo', true).order('nome');
+  if (segurados) {
+    const dl = document.getElementById('dl-segurados');
+    if (dl) dl.innerHTML = segurados.map(s => `<option value="${escapeHtml(s.nome)}">`).join('');
+
+    const lista = document.getElementById('lista-segurados-sidebar');
+    if (lista) {
+      lista.innerHTML = `<div class="sidebar-item" onclick="setFilter('tipo_segurado','todos',this)">👥 Todos</div>` +
+        segurados.map(s =>
+          `<div class="sidebar-item" onclick="setFilter('tipo_segurado','${escapeHtml(s.nome).replace(/'/g,"\\'")}',this)">${escapeHtml(s.nome)}</div>`
+        ).join('');
+    }
+  }
+
+  // Tipos de benefício
+  const { data: beneficios } = await sb.from('tipos_beneficio').select('nome').eq('ativo', true).order('nome');
+  if (beneficios) {
+    const dl = document.getElementById('dl-beneficios');
+    if (dl) dl.innerHTML = beneficios.map(b => `<option value="${escapeHtml(b.nome)}">`).join('');
+
+    const lista = document.getElementById('lista-beneficios-sidebar');
+    if (lista) {
+      lista.innerHTML = `<div class="sidebar-item" onclick="setFilter('tipo_beneficio','todos',this)">📋 Todos</div>` +
+        beneficios.map(b =>
+          `<div class="sidebar-item" onclick="setFilter('tipo_beneficio','${escapeHtml(b.nome).replace(/'/g,"\\'")}',this)">${escapeHtml(b.nome)}</div>`
+        ).join('');
+    }
+  }
+
+  // Tribunais no datalist do modal
+  const { data: tribunais } = await sb.from('tribunais').select('sigla').eq('ativo', true).order('sigla');
+  if (tribunais) {
+    const dl = document.getElementById('dl-tribunais');
+    if (dl) dl.innerHTML = tribunais.map(t => `<option value="${escapeHtml(t.sigla)}">`).join('');
   }
 }
 
@@ -970,6 +1116,13 @@ async function importarBackup(event) {
 // ════════════════════════════════════════════════════════════════
 // FUNÇÕES DE EXIBIÇÃO (filtragem, render, stats)
 // ════════════════════════════════════════════════════════════════
+function setFiltroSegurado(valor, btn) {
+  filtroSegurado = valor;
+  document.querySelectorAll('.filtro-seg-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTable();
+}
+
 function getFiltered() {
   let list = [...clientes];
   if (modoAtual === 'pendentes') {
@@ -977,13 +1130,21 @@ function getFiltered() {
   } else {
     list = list.filter(c => !c.pendente);
   }
+  // Filtro rápido Rural/Facultativo
+  if (filtroSegurado && filtroSegurado !== 'todos') {
+    list = list.filter(c => (c.tipo_segurado||'') === filtroSegurado);
+  }
+
   const search = document.getElementById('search-input').value.toLowerCase();
   if (search) list = list.filter(c =>
     (c.nome||'').toLowerCase().includes(search) ||
     (c.secao_judiciaria||'').toLowerCase().includes(search) ||
     (c.o_que_precisa||'').toLowerCase().includes(search) ||
     (c.telefone||'').toLowerCase().includes(search) ||
-    (c.observacoes||'').toLowerCase().includes(search)
+    (c.observacoes||'').toLowerCase().includes(search) ||
+    (c.tipo_beneficio||'').toLowerCase().includes(search) ||
+    (c.tipo_segurado||'').toLowerCase().includes(search) ||
+    (c.tribunal||'').toLowerCase().includes(search)
   );
   if (currentFilter.type === 'advogado') {
     // Sempre exclui clientes parqueadas em "Sem Retorno/Red"
@@ -1004,6 +1165,10 @@ function getFiltered() {
     list = list.filter(c => c.motivo_pendencia === currentFilter.value);
   } else if (currentFilter.type === 'prazoAdvogado') {
     list = list.filter(c => c.data_prazo && (c.advogado||'').includes(currentFilter.value));
+  } else if (currentFilter.type === 'tipo_segurado' && currentFilter.value !== 'todos') {
+    list = list.filter(c => (c.tipo_segurado||'') === currentFilter.value);
+  } else if (currentFilter.type === 'tipo_beneficio' && currentFilter.value !== 'todos') {
+    list = list.filter(c => (c.tipo_beneficio||'') === currentFilter.value);
   }
   const sort = document.getElementById('sort-sel').value;
   if (sort === 'nome') list.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
@@ -1149,6 +1314,9 @@ function openDetail(id) {
     setTxt('dp-sub', `${c.advogado||''} — ${c.secao_judiciaria||''}`);
     setTxt('dp-adv', c.advogado || '—');
     setTxt('dp-cidade', c.secao_judiciaria || '—');
+    setTxt('dp-tribunal', c.tribunal || '—');
+    setTxt('dp-segurado', c.tipo_segurado || '—');
+    setTxt('dp-beneficio', c.tipo_beneficio || '—');
     setTxt('dp-data', c.data_prazo ? c.data_prazo.split('-').reverse().join('/') : 'Sem prazo definido');
     setTxt('dp-tel', c.telefone || 'Não informado');
     setTxt('dp-doc', c.o_que_precisa || '—');
@@ -1246,6 +1414,12 @@ function ativarEdicao(elemento, campo) {
     </select>`;
   } else if (campo === 'secao_judiciaria') {
     html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}" list="dl-secoes">`;
+  } else if (campo === 'tribunal') {
+    html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}" list="dl-tribunais" placeholder="TRF1, TRF5, EPROC...">`;
+  } else if (campo === 'tipo_segurado') {
+    html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}" list="dl-segurados" placeholder="Rural, Facultativo...">`;
+  } else if (campo === 'tipo_beneficio') {
+    html += `<input type="text" class="edit-input" id="edit-input-field" value="${escapeHtml(valorAtual)}" list="dl-beneficios" placeholder="Salário-maternidade...">`;
   } else if (campo === 'advogado') {
     html += '<select class="edit-select" id="edit-input-field">';
     advogadosDisponiveis.forEach(a => { html += `<option value="${a}" ${a===valorAtual?'selected':''}>${a}</option>`; });
@@ -1404,7 +1578,7 @@ function openModal() {
   editandoId = null;
   document.getElementById('modal-titulo').textContent = '➕ Nova Cliente';
   document.getElementById('btn-salvar').textContent = 'Salvar';
-  ['f-id','f-nome','f-data','f-tel','f-doc','f-obs'].forEach(id=>document.getElementById(id).value='');
+  ['f-id','f-nome','f-data','f-tel','f-doc','f-obs','f-tribunal','f-segurado','f-beneficio'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-adv').value = 'Jonathan';
   document.getElementById('f-cidade').value = 'SJBA';
   document.getElementById('f-status').value = 'aguardando';
@@ -1429,6 +1603,9 @@ async function salvarCliente() {
     nome,
     advogado: document.getElementById('f-adv').value,
     secao_judiciaria: document.getElementById('f-cidade').value,
+    tribunal: document.getElementById('f-tribunal').value.trim() || null,
+    tipo_segurado: document.getElementById('f-segurado').value.trim() || null,
+    tipo_beneficio: document.getElementById('f-beneficio').value.trim() || null,
     data_prazo: document.getElementById('f-data').value || null,
     telefone: document.getElementById('f-tel').value.trim() || null,
     o_que_precisa: document.getElementById('f-doc').value.trim() || null,
